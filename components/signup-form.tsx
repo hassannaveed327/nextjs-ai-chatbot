@@ -70,13 +70,7 @@ export default function SignupForm() {
             </div>
           </div>
         </div>
-        <LoginButton />
       </div>
-
-      <Link href="/login" className="flex flex-row gap-1 text-sm text-zinc-400">
-        Already have an account?
-        <div className="font-semibold underline">Log in</div>
-      </Link>
     </form>
   )
 }
