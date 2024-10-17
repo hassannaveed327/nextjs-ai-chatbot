@@ -15,43 +15,21 @@ import { toast } from 'sonner'
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
-  session?: Session
-  missingKeys: string[]
 }
 
-export function Chat({ id, className, session, missingKeys }: ChatProps) {
+export function Chat({ id, className }: ChatProps) {
   const router = useRouter()
-  const path = usePathname()
   const [input, setInput] = useState('')
-  const [messages] = useUIState()
+  const [messages, setMessages] = useState<any>([])
   const [aiState] = useAIState()
 
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
-  useEffect(() => {
-    if (session?.user) {
-      if (!path.includes('chat') && messages.length === 1) {
-        window.history.replaceState({}, '', `/chat/${id}`)
-      }
-    }
-  }, [id, path, session?.user, messages])
-
-  useEffect(() => {
-    const messagesLength = aiState.messages?.length
-    if (messagesLength === 2) {
-      router.refresh()
-    }
-  }, [aiState.messages, router])
 
   useEffect(() => {
     setNewChatId(id)
   })
 
-  useEffect(() => {
-    missingKeys.map(key => {
-      toast.error(`Missing ${key} environment variable!`)
-    })
-  }, [missingKeys])
 
   const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
     useScrollAnchor()
@@ -66,18 +44,19 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         ref={messagesRef}
       >
         {messages.length ? (
-          <ChatList messages={messages} isShared={false} session={session} />
+          <ChatList messages={messages} />
         ) : (
           <EmptyScreen />
         )}
         <div className="w-full h-px" ref={visibilityRef} />
       </div>
       <ChatPanel
-        id={id}
+        messages={messages}
         input={input}
         setInput={setInput}
         isAtBottom={isAtBottom}
         scrollToBottom={scrollToBottom}
+        setMessages={(val) => setMessages(val)}
       />
     </div>
   )

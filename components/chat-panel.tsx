@@ -10,27 +10,31 @@ import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
 import { UserMessage } from './stocks/message'
+import {useState} from "react";
 
 export interface ChatPanelProps {
-  id?: string
-  title?: string
   input: string
   setInput: (value: string) => void
+  messages?: any
   isAtBottom: boolean
   scrollToBottom: () => void
+  setMessages: (value: any) => void
 }
 
 export function ChatPanel({
-  id,
-  title,
   input,
   setInput,
+  messages,
+  setMessages,
   isAtBottom,
   scrollToBottom
 }: ChatPanelProps) {
-  const [aiState] = useAIState()
-  const [messages, setMessages] = useUIState<typeof AI>()
-  const { submitUserMessage } = useActions()
+
+  const submitUserMessage = async (val: any) => {
+    console.log('ok', val);
+    return 'Response to: ${val}';
+  }
+
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
   const exampleMessages = [
@@ -65,7 +69,7 @@ export function ChatPanel({
 
       <div className="mx-auto sm:max-w-2xl sm:px-4">
         <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
-          {messages.length === 0 &&
+          {messages?.length === 0 &&
             exampleMessages.map((example, index) => (
               <div
                 key={example.heading}
@@ -73,22 +77,27 @@ export function ChatPanel({
                   index > 1 && 'hidden md:block'
                 }`}
                 onClick={async () => {
-                  setMessages(currentMessages => [
-                    ...currentMessages,
-                    {
-                      id: nanoid(),
-                      display: <UserMessage>{example.message}</UserMessage>
-                    }
-                  ])
-
-                  const responseMessage = await submitUserMessage(
-                    example.message
-                  )
-
-                  setMessages(currentMessages => [
-                    ...currentMessages,
-                    responseMessage
-                  ])
+                  if (setMessages) {
+                    setMessages((currentMessages: any) => [
+                      ...currentMessages,
+                      {
+                        from: 'user',
+                        message: <UserMessage>{example.message}</UserMessage>,
+                      }
+                    ])
+                  }
+                  // send msg here
+                  const responseMessage = await submitUserMessage( example.message )
+                  console.log('rests', responseMessage);
+                  if (setMessages) {
+                    setMessages((currentMessages: any) => [
+                      ...currentMessages,
+                      {
+                        from: 'ai',
+                        message: responseMessage
+                      }
+                    ])
+                  }
                 }}
               >
                 <div className="text-sm font-semibold">{example.heading}</div>
@@ -99,37 +108,8 @@ export function ChatPanel({
             ))}
         </div>
 
-        {messages?.length >= 2 ? (
-          <div className="flex h-12 items-center justify-center">
-            <div className="flex space-x-2">
-              {id && title ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShareDialogOpen(true)}
-                  >
-                    <IconShare className="mr-2" />
-                    Share
-                  </Button>
-                  <ChatShareDialog
-                    open={shareDialogOpen}
-                    onOpenChange={setShareDialogOpen}
-                    onCopy={() => setShareDialogOpen(false)}
-                    shareChat={shareChat}
-                    chat={{
-                      id,
-                      title,
-                      messages: aiState.messages
-                    }}
-                  />
-                </>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-
         <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
-          <PromptForm input={input} setInput={setInput} />
+          <PromptForm input={input} setInput={setInput} setMessages={(val) =>  setMessages(val) }/>
          </div>
       </div>
     </div>

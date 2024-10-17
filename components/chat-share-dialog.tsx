@@ -75,7 +75,7 @@ export function ChatShareDialog({
                   return
                 }
 
-                copyShareLink(result)
+                await copyShareLink(result)
               })
             }}
           >

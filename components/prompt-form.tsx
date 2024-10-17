@@ -17,19 +17,25 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
+import {useState} from "react";
 
 export function PromptForm({
   input,
-  setInput
+  setInput,
+  setMessages,
+  messages
 }: {
   input: string
-  setInput: (value: string) => void
+  setInput: (value: string) => void,
+  setMessages: (value: any) => void,
+  messages?: any
 }) {
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const { submitUserMessage } = useActions()
-  const [_, setMessages] = useUIState<typeof AI>()
+  const submitUserMessage = async (val: any) => {
+     return 'Response to: ${val}';
+  }
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -53,17 +59,23 @@ export function PromptForm({
         if (!value) return
 
         // Optimistically add user message UI
-        setMessages(currentMessages => [
+        setMessages((currentMessages: any) => [
           ...currentMessages,
           {
-            id: nanoid(),
-            display: <UserMessage>{value}</UserMessage>
+            from: 'user',
+            message: <UserMessage>{value}</UserMessage>
           }
         ])
 
         // Submit and get response message
+        console.log('value from user', value)
         const responseMessage = await submitUserMessage(value)
-        setMessages(currentMessages => [...currentMessages, responseMessage])
+        setMessages((currentMessages: any) => [...currentMessages,
+            {
+              from: 'ai',
+              message:  responseMessage
+            }
+        ])
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
