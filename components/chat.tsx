@@ -6,11 +6,14 @@ import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
 import { useEffect, useState } from 'react'
-import { useUIState, useAIState } from 'ai/rsc'
-import { Message, Session } from '@/lib/types'
-import { usePathname, useRouter } from 'next/navigation'
+import { Message} from '@/lib/types'
+import { useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
-import { toast } from 'sonner'
+import Image from "next/image";
+import UserImg from "@/public/user_img.jpg";
+import {Separator} from "@/components/ui/separator";
+import * as React from "react";
+import {SyncLoader} from "react-spinners";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -20,9 +23,12 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 export function Chat({ id, className }: ChatProps) {
   const router = useRouter()
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<any>([])
-  const [aiState] = useAIState()
-
+  const [messages, setMessages] = useState<any>([{
+    from: 'ai',
+    message: <div className={'text-left'}>This is the OverMind, sentient AI over the universe
+      How may I help you</div>
+  }])
+  const [msgLoader, setMsgLoader] = useState(false);
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
 
@@ -44,19 +50,21 @@ export function Chat({ id, className }: ChatProps) {
         ref={messagesRef}
       >
         {messages.length ? (
-          <ChatList messages={messages} />
-        ) : (
-          <EmptyScreen />
+              <ChatList messages={messages} loader={msgLoader} />
+         ) : (
+            <EmptyScreen/>
         )}
-        <div className="w-full h-px" ref={visibilityRef} />
+        <div className="w-full h-px" ref={visibilityRef}/>
       </div>
       <ChatPanel
-        messages={messages}
-        input={input}
-        setInput={setInput}
-        isAtBottom={isAtBottom}
-        scrollToBottom={scrollToBottom}
-        setMessages={(val) => setMessages(val)}
+          messages={messages}
+          msgLoader={msgLoader}
+          setMsgLoader={(val) => setMsgLoader(val)}
+          input={input}
+          setInput={setInput}
+          isAtBottom={isAtBottom}
+          scrollToBottom={scrollToBottom}
+          setMessages={(val) => setMessages(val)}
       />
     </div>
   )

@@ -7,7 +7,7 @@ import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 import { IconShare } from '@/components/ui/icons'
 import { ChatShareDialog } from '@/components/chat-share-dialog'
 import { useAIState, useActions, useUIState } from 'ai/rsc'
-import type { AI } from '@/lib/chat/actions'
+import { submitUserMessage} from '@/lib/chat/res'
 import { nanoid } from 'nanoid'
 import { UserMessage } from './stocks/message'
 import {useState} from "react";
@@ -18,6 +18,8 @@ export interface ChatPanelProps {
   messages?: any
   isAtBottom: boolean
   scrollToBottom: () => void
+  msgLoader: boolean
+  setMsgLoader: (value: boolean) => void
   setMessages: (value: any) => void
 }
 
@@ -26,38 +28,24 @@ export function ChatPanel({
   setInput,
   messages,
   setMessages,
+  msgLoader,
+  setMsgLoader,
   isAtBottom,
   scrollToBottom
 }: ChatPanelProps) {
 
-  const submitUserMessage = async (val: any) => {
-    console.log('ok', val);
-    return 'Response to: ${val}';
-  }
-
-  const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
   const exampleMessages = [
     {
-      heading: 'What are the',
-      subheading: 'trending memecoins today?',
-      message: `What are the trending memecoins today?`
+      heading: 'What is',
+      subheading: 'What is Solar Studios?',
+      message: `What is Solar Studios?`
     },
     {
-      heading: 'What is the price of',
-      subheading: '$DOGE right now?',
-      message: 'What is the price of $DOGE right now?'
+      heading: 'Tell Me',
+      subheading: 'Tell me about the team behind Solar',
+      message: 'Tell me about the team behind Solar'
     },
-    {
-      heading: 'I would like to buy',
-      subheading: '42 $DOGE',
-      message: `I would like to buy 42 $DOGE`
-    },
-    {
-      heading: 'What are some',
-      subheading: `recent events about $DOGE?`,
-      message: `What are some recent events about $DOGE?`
-    }
   ]
 
   return (
@@ -69,7 +57,7 @@ export function ChatPanel({
 
       <div className="mx-auto sm:max-w-2xl sm:px-4">
         <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
-          {messages?.length === 0 &&
+          {messages?.length < 2 &&
             exampleMessages.map((example, index) => (
               <div
                 key={example.heading}
@@ -78,6 +66,7 @@ export function ChatPanel({
                 }`}
                 onClick={async () => {
                   if (setMessages) {
+                    setMsgLoader(true);
                     setMessages((currentMessages: any) => [
                       ...currentMessages,
                       {
@@ -86,10 +75,9 @@ export function ChatPanel({
                       }
                     ])
                   }
-                  // send msg here
                   const responseMessage = await submitUserMessage( example.message )
-                  console.log('rests', responseMessage);
-                  if (setMessages) {
+                  setMsgLoader(false);
+                  if (responseMessage) {
                     setMessages((currentMessages: any) => [
                       ...currentMessages,
                       {
@@ -109,7 +97,7 @@ export function ChatPanel({
         </div>
 
         <div className="space-y-4 border-t bg-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
-          <PromptForm input={input} setInput={setInput} setMessages={(val) =>  setMessages(val) }/>
+          <PromptForm input={input} setInput={setInput} setMessages={(val) =>  setMessages(val) } setMsgLoader={(v) => setMsgLoader(v)}/>
          </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ import {auth} from '@/auth'
 import React from "react";
 
 
+
 export type AIState = {
   chatId: string
   messages: Message[]
@@ -112,3 +113,5 @@ export const getUIStateFromAIState = (aiState: Chat) => {
         ) : null
     }))
 }
+
+

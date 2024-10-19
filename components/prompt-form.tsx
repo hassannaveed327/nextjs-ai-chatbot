@@ -6,7 +6,7 @@ import Textarea from 'react-textarea-autosize'
 import { useActions, useUIState } from 'ai/rsc'
 
 import { UserMessage } from './stocks/message'
-import { type AI } from '@/lib/chat/actions'
+import { submitUserMessage} from '@/lib/chat/res'
 import { Button } from '@/components/ui/button'
 import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
 import {
@@ -15,27 +15,25 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
-import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
-import {useState} from "react";
 
 export function PromptForm({
   input,
   setInput,
   setMessages,
+  setMsgLoader,
   messages
 }: {
   input: string
   setInput: (value: string) => void,
   setMessages: (value: any) => void,
+  setMsgLoader: (value: boolean) => void,
   messages?: any
 }) {
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const submitUserMessage = async (val: any) => {
-     return 'Response to: ${val}';
-  }
+
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -58,7 +56,7 @@ export function PromptForm({
         setInput('')
         if (!value) return
 
-        // Optimistically add user message UI
+      setMsgLoader(true)
         setMessages((currentMessages: any) => [
           ...currentMessages,
           {
@@ -69,13 +67,16 @@ export function PromptForm({
 
         // Submit and get response message
         console.log('value from user', value)
-        const responseMessage = await submitUserMessage(value)
-        setMessages((currentMessages: any) => [...currentMessages,
-            {
-              from: 'ai',
-              message:  responseMessage
-            }
-        ])
+        const responseMessage = await submitUserMessage(value);
+        setMsgLoader(false)
+        if (responseMessage) {
+            setMessages((currentMessages: any) => [...currentMessages,
+                {
+                    from: 'ai',
+                    message: responseMessage
+                }
+            ])
+        }
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
